@@ -1,0 +1,16 @@
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=<% settings.charset %>" />
+<title>FilesHub</title>
+<link rel="stylesheet" href="<% request.uri_base %>/css/style.css" />
+
+</head>
+<body>
+<div id="header">
+FilesHub бесплатный, простой и лёгкий.<br>
+FilesHub хостит файлы, картинки и чего пожелаете.
+</div>
+
+<% content %>
+
+</body>
+</html>

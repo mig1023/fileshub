@@ -1,0 +1,11 @@
+<div class = style_login>
+
+<form action="<% log_done %>" method = "post">
+<table width = 400>
+<tr> <td>логин</td> <td>пароль</td> </tr>
+<tr> <td> <input type = "text" size = "22" name = "login"> </td>
+<td> <input type="password" size = "22" name = "password"> </td> </tr>
+<tr> <td height = 30><a href="/">вернуться назад</a></td>
+<td align = right><input type = "submit" value = "войти"></td> </tr>
+</table>
+</div>

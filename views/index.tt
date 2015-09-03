@@ -1,0 +1,31 @@
+
+<div class = left_login>
+<% IF user_log %>
+	<a href = "<% link_out %>">разлогиниться</a> | <a href = "<% link_lst %>">все файлы</a>
+<% ELSE %>
+	<a href = "<% link_log %>">залогиниться</a> | <a href = "<% link_reg %>">зарегиться</a>
+<% END %>
+</div>
+
+<% IF filesnum %>
+<div class = style_files>
+<% ELSE %>
+<div class = style_no_files>
+<% END %>
+
+<form action="<% link_add %>" method="post" enctype="multipart/form-data">
+      загрузить файл:
+      <input type="file" size="20" name="file_name">
+      <input type="submit" value="загрузить!">
+      <br><br>
+      <% IF filesnum %> 
+      	последние загруженные вами файлы:<br>
+      	<table width="540" border="0">
+      	<tr bgcolor="gray"><td>файл</td><td>размер</td><td>md5</td>
+      	<% fileslst %>
+      	</table>
+      <% ELSE %>
+      	вы пока не загрузили ни одного файла<% END %>
+</form>
+
+</div>

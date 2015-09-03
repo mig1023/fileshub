@@ -1,0 +1,4 @@
+<div class = style_add>
+ваш файл <% filename %> (<% filesize %>) успешно загружен<br>
+<a href="/">вернуться назад</a>
+</div>

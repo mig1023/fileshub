@@ -1,0 +1,130 @@
+html {
+height: 100%;   
+}
+body {
+background-image: url(../images/truck-4.png);
+background-position: center center;
+background-repeat: no-repeat;
+}
+a {
+color: #F75701;
+text-decoration: none;
+}
+a:hover {
+color: #B03E00;
+text-decoration: underline;
+}
+.style_files {
+left: 50%;
+top: 50%; 
+position: fixed;
+margin-left: -270px;
+margin-top: -75px; 
+width: 540px;
+height: 150px;
+background: white;
+border:1px solid black;
+padding:10px 10px 10px 10px;
+}
+.style_no_files {
+left: 50%;
+top: 50%; 
+position: fixed;
+margin-left: -270px;
+margin-top: -30px; 
+width: 540px;
+height: 60px;
+background: white;
+border:1px solid black;
+padding:10px 10px 10px 10px;
+}
+.style_add {
+left: 50%;
+top: 50%; 
+position: fixed;
+margin-left: -300px;
+margin-top: -20px; 
+width: 600px;
+height: 40px;
+background: white;
+border:1px solid black;
+padding:10px 10px 10px 10px;
+text-align: center;
+}
+.left_login {
+position:fixed;
+width: 250px;
+top:10px;
+background: white;
+margin-left:100%;
+left:-260px;
+text-align: right;
+}
+.style_glob {
+left: 50%;
+top: 50%; 
+position: fixed;
+margin-left: -320px;
+margin-top: -190px; 
+width: 640px;
+height: 380px;
+}
+.style_reg {
+float:left;
+width: 202px;
+height: 390px;
+background: white;
+border:1px solid black;
+padding:10px 10px 10px 10px;
+}
+.style_ent {
+display: inline;
+width: 45px;
+float:left;
+}
+.style_rules {
+display: inline;
+float:left;
+width: 340px;
+height: 390px;
+background: white;
+border:1px solid black;
+padding:10px 10px 10px 10px;
+}
+.style_login {
+left: 50%;
+top: 50%; 
+position: fixed;
+margin-left: -205px;
+margin-top: -40px; 
+width: 410px;
+height: 80px;
+background: white;
+border:1px solid black;
+padding:10px 10px 10px 10px;
+}
+.style_load {
+left: 50%;
+top: 50%; 
+position: fixed;
+margin-left: -270px;
+margin-top: -90px; 
+width: 540px;
+height: 180px;
+background: white;
+border:1px solid black;
+padding:10px 10px 10px 10px;
+}
+.list_files {
+left: 50%; 
+top: 50%;
+position: fixed;
+margin-top: -200px; 
+margin-left: -340px;
+width: 680px;
+height: 400px;
+background: white;
+border:1px solid black;
+padding:10px 10px 10px 10px;
+overflow-y: scroll;
+}

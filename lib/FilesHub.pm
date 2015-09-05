@@ -1,4 +1,4 @@
-﻿package FilesHub;
+package FilesHub;
 use Dancer2;
 use Digest::MD5;
 use DBI;
@@ -11,7 +11,8 @@ my @files = ();
 my $dbh;
 my $sbh;
 
-any '/' => sub {
+## главная страница
+any '/' => sub { 
 	my $files_l = "";
 	my $files_nm = 0;
 	if (@files > 3) { $files_nm = 2 }
@@ -34,7 +35,8 @@ any '/' => sub {
     				'filesnum' => scalar(@files),
     				'fileslst' => $files_l };
 	};
-	
+
+## загрузка файла на сервер
 any '/add' => sub {
 	my $uploadedFile = upload('file_name');
 	my $f_size;
@@ -59,10 +61,12 @@ any '/add' => sub {
 	else { 	template "add_fail" };
 	};
 
+## форма для авторизации
 any '/login' => sub {
 	template "login" => { 'log_done' => uri_for('/log_done') };
 	};
 
+## авторизация
 any '/log_done' => sub {
 	my $logfail = 0;
 	&connect_dbi();
@@ -80,6 +84,7 @@ any '/log_done' => sub {
 		template "log_fail" };	
 	};
 
+## личный кабинет со списком загруженных файлов
 any '/list' => sub {
 	&connect_dbi();
 	my $files_l = "";
@@ -99,6 +104,7 @@ any '/list' => sub {
 	$dbh->disconnect();
 	template "list" => { 'fileslst' => $files_l } };
 
+# удаление файла
 any '/del' => sub {
 	unlink $path . $log_in . '/' . params->{'del_name'};
 	&connect_dbi();
@@ -107,18 +113,21 @@ any '/del' => sub {
 	redirect '/list';
 	};
 
+## выход из личного кабинета
 any '/logout' => sub {
 	$log_in = '';
 	@files = ();
 	redirect '/';
 	};
 
+## форма регистрации 
 any '/reg' => sub {
 	capcha();
 	
 	template "reg" => { 'reg_done' => uri_for('/reg_done') };
 	};
-	
+
+## регистрация	
 any '/reg_done' => sub {
 	my $fail_r = '';
 	
@@ -152,6 +161,7 @@ any '/reg_done' => sub {
 				}
 	};
 
+## форма скачивания файла из общей папки
 any '/download/*' => sub {
 	my ($filename) = splat;
 	capcha();
@@ -163,6 +173,7 @@ any '/download/*' => sub {
 					'md5_file' => md5_file('public/upload/' . $filename) }
 	};
 
+## форма скачивания файла из личной папки
 any '/download/*/*' => sub {
 	my ($username, $filename) = splat;
 	capcha();
@@ -174,11 +185,13 @@ any '/download/*/*' => sub {
 					'md5_file' => md5_file('public/upload/' . $username . '/' . $filename) };
 	};
 
+## скачивание файла
 any '/file/*' => sub {
 	if (params->{'s_capcha'} eq $capcha) 	{ send_file(params->{'filepath'}) }
 				else		{ template "file_fail" };
 	};
 
+## размер файла в читабельном формате
 sub f_size {
 	my $f_size = -s shift;
 	my $s_size;
@@ -187,7 +200,8 @@ sub f_size {
 	$s_size = sprintf("%1d",($f_size / (1024*1024))) . ' Мб'  if ($f_size > (1024*1024));
 	$s_size;
 	};
-	
+
+## укорачивание имени файла для отображения	
 sub s_name {
 	my $name_full = shift;
 	my $name_short = substr($name_full, 0, 15);
@@ -197,6 +211,7 @@ sub s_name {
 	$name_short;
 	};
 
+## переименование загружаемого файла, если файл с таким именем уже есть
 sub check_name {
 	my $name_file = shift;
 	my $addpath = $log_in . '/' if $log_in ne ''; 
@@ -216,12 +231,14 @@ sub check_name {
 	$name_file;
 	};
 
+## присоединение к БД
 sub connect_dbi {
-	$dbh = DBI->connect("dbi:mysql:dbname=FileHub", "login", "password") or die "error MySQL connection!";
+	$dbh = DBI->connect("dbi:mysql:dbname=FilesHub", "login", "password") or die "error MySQL connection!";
 	$dbh->do("SET CHARACTER SET 'cp1251");
 	$dbh->do("SET NAMES 'cp1251");
 	}
 
+## перемещение файлов из общей папки в личную
 sub move_file_to_db {
 	&connect_dbi();
 	for (@files) {
@@ -231,6 +248,7 @@ sub move_file_to_db {
 	$dbh->disconnect();
 	}
 
+## капча (четыре случайные цифры)
 sub capcha {
 	my @symbol = ('A','B','C','D');
 	$capcha = '';
@@ -240,6 +258,7 @@ sub capcha {
 		$capcha .= $number; }; 
 	}
 
+## расчёт md5 для файла
 sub md5_file {
 	open( my $file, '<', shift );
 	binmode( $file );
@@ -248,6 +267,7 @@ sub md5_file {
 	$md5_result;
 	}
 
+## расчёт md5 для строки
 sub md5_str {
 	my $md5 = Digest::MD5->new->add(shift);
 	$md5->hexdigest;

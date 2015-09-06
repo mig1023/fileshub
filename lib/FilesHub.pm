@@ -3,8 +3,11 @@ use Dancer2;
 use Digest::MD5;
 use DBI;
 use File::Copy;
+use File::Spec;
 
-my $path = 'public/upload/';
+my $main_path = normal_name((File::Spec->splitpath( __FILE__ ))[1] . '../');
+my $path = normal_name((File::Spec->splitpath( __FILE__ ))[1] . '../public/upload/');
+my $path_capcha = normal_name((File::Spec->splitpath( __FILE__ ))[1] . '../public/images/capcha/');
 my $log_in = '';
 my $capcha = 0;
 my @files = ();
@@ -170,7 +173,7 @@ any '/download/*' => sub {
 					'filelink' => uri_for("/file/" . $filename),
 					'filepath' => 'upload/' . $filename,
 					'permlink' => uri_for("/download/") . $filename,
-					'md5_file' => md5_file('public/upload/' . $filename) }
+					'md5_file' => md5_file($main_path .'public/upload/' . $filename) }
 	};
 
 ## форма скачивания файла из личной папки
@@ -182,7 +185,7 @@ any '/download/*/*' => sub {
 					'filelink' => uri_for("/file/" . $filename),
 					'filepath' => 'upload/' . $username . '/' . $filename,
 					'permlink' => uri_for("/download/") . $username . '/' . $filename,
-					'md5_file' => md5_file('public/upload/' . $username . '/' . $filename) };
+					'md5_file' => md5_file($main_path . 'public/upload/' . $username . '/' . $filename) };
 	};
 
 ## скачивание файла
@@ -233,7 +236,7 @@ sub check_name {
 
 ## присоединение к БД
 sub connect_dbi {
-	$dbh = DBI->connect("dbi:mysql:dbname=FilesHub", "login", "password") or die "error MySQL connection!";
+	$dbh = DBI->connect("dbi:mysql:dbname=FilesHub", "root", "password") or die;
 	$dbh->do("SET CHARACTER SET 'cp1251");
 	$dbh->do("SET NAMES 'cp1251");
 	}
@@ -254,13 +257,13 @@ sub capcha {
 	$capcha = '';
 	for (0..3) {
 		my $number = int(rand(9));
-		copy( 'public/images/capcha/'.$number.'.JPG' , 'public/images/capcha/'.$symbol[$_].'.JPG');
+		copy( $path_capcha . $number . '.JPG' , $path_capcha . $symbol[$_].'.JPG');
 		$capcha .= $number; }; 
 	}
 
 ## расчёт md5 для файла
 sub md5_file {
-	open( my $file, '<', shift );
+	open( my $file, '<', shift);
 	binmode( $file );
 	my $md5_result = Digest::MD5->new->addfile($file)->hexdigest;
 	close( $file );
@@ -271,6 +274,13 @@ sub md5_file {
 sub md5_str {
 	my $md5 = Digest::MD5->new->add(shift);
 	$md5->hexdigest;
+	}
+
+## нормализация пути к файлам
+sub normal_name {
+	my $str = shift;
+	$str =~ s/\/[^\/]+\/\.\.\//\//gix while $str =~ /\.\./;
+	$str;
 	}
 
 true;

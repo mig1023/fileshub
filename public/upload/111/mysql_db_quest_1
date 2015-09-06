@@ -1,3 +1,0 @@
-create table user_name (num INT AUTO_INCREMENT, user_name TEXT, password TEXT, email TEXT, PRIMARY KEY(num)) Engine=InnoDB;
-
-create table download ( num INT AUTO_INCREMENT, user_name TEXT, links TEXT, PRIMARY KEY(num)) Engine=InnoDB;

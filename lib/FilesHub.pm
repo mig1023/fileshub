@@ -5,9 +5,9 @@ use DBI;
 use File::Copy;
 use File::Spec;
 
-my $main_path = normal_name((File::Spec->splitpath( __FILE__ ))[1] . '../');
-my $path = normal_name((File::Spec->splitpath( __FILE__ ))[1] . '../public/upload/');
-my $path_capcha = normal_name((File::Spec->splitpath( __FILE__ ))[1] . '../public/images/capcha/');
+my $main_path =   normal_name( (File::Spec->splitpath( __FILE__ ))[1] .	'../');
+my $path = 	  normal_name( (File::Spec->splitpath( __FILE__ ))[1] . '../public/upload/');
+my $path_capcha = normal_name( (File::Spec->splitpath( __FILE__ ))[1] . '../public/images/capcha/');
 my $log_in = '';
 my $capcha = 0;
 my @files = ();
@@ -74,7 +74,7 @@ any '/log_done' => sub {
 	my $logfail = 0;
 	&connect_dbi();
 	$sbh = $dbh->prepare("SELECT * FROM user_name WHERE user_name = '" . params->{'login'} . "';");
-	$sbh->execute or die "\nerror query!";
+	$sbh->execute or die;
 	my $hashref = $sbh->fetchrow_hashref();
 	$dbh->disconnect();
 	
@@ -93,7 +93,7 @@ any '/list' => sub {
 	my $files_l = "";
 	my $hashref;
 	$sbh = $dbh->prepare("SELECT * FROM download WHERE user_name = '" . $log_in . "';");
-	$sbh->execute or die "\nerror query!";
+	$sbh->execute or die;
 		
 	while ($hashref = $sbh->fetchrow_hashref()) { $files_l .= '<tr>' .
 		'<td>' . s_name($hashref->{'links'}). '</td>' . 
@@ -136,7 +136,7 @@ any '/reg_done' => sub {
 	
 	&connect_dbi();
 	$sbh = $dbh->prepare("SELECT * FROM user_name WHERE user_name = '" . params->{'login'} . "';");
-	$sbh->execute or die "\nError query!";
+	$sbh->execute or die;
 	my $hashref = $sbh->fetchrow_hashref();
 	$dbh->disconnect();
 	
@@ -180,7 +180,7 @@ any '/download/*' => sub {
 any '/download/*/*' => sub {
 	my ($username, $filename) = splat;
 	capcha();
-	
+
 	template "file_down" => { 	'filename' => $filename,
 					'filelink' => uri_for("/file/" . $filename),
 					'filepath' => 'upload/' . $username . '/' . $filename,

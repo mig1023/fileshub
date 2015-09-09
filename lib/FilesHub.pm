@@ -5,9 +5,9 @@ use DBI;
 use File::Copy;
 use File::Spec;
 
-my $main_path =   normal_name( (File::Spec->splitpath( __FILE__ ))[1] .	'../');
-my $path = 	  normal_name( (File::Spec->splitpath( __FILE__ ))[1] . '../public/upload/');
-my $path_capcha = normal_name( (File::Spec->splitpath( __FILE__ ))[1] . '../public/images/capcha/');
+my $main_path = normal_name( (File::Spec->splitpath( __FILE__ ))[1]);
+my $path = $main_path . 'public/upload/';
+my $path_capcha = $main_path . 'public/images/capcha/';
 my $log_in = '';
 my $capcha = 0;
 my @files = ();
@@ -279,7 +279,7 @@ sub md5_str {
 ## нормализация пути к файлам
 sub normal_name {
 	my $str = shift;
-	$str =~ s/\/[^\/]+\/\.\.\//\//gix while $str =~ /\.\./;
+	$str =~ s/\/bin\/.*/\//gi;
 	$str;
 	}
 

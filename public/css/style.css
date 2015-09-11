@@ -128,3 +128,8 @@ border:1px solid black;
 padding:10px 10px 10px 10px;
 overflow-y: scroll;
 }
+.sub_font {
+font-family: sans-serif;
+font-size: 12px;
+font-weight: 100;
+}

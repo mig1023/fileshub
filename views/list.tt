@@ -2,7 +2,7 @@
 <div class = list_files>
 	<a href="/">вернуться назад</a><br><br>
       	<table width="660" border="0">
-      	<tr bgcolor="gray"><td>файл</td><td>размер</td><td>md5</td><td>del</td>
+      	<tr bgcolor="gray"><td>файл</td><td>размер</td><td>md5</td><td>del</td></tr>
       	<% fileslst %>
       	</table>
 </div>

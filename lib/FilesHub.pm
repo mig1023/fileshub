@@ -73,7 +73,7 @@ any '/login' => sub {
 any '/log_done' => sub {
 	my $logfail = 0;
 	&connect_dbi();
-	$sbh = $dbh->prepare("SELECT * FROM user_name WHERE user_name = '" . params->{'login'} . "';");
+	$sbh = $dbh->prepare("SELECT * FROM username WHERE user_name = '" . params->{'login'} . "';");
 	$sbh->execute or die;
 	my $hashref = $sbh->fetchrow_hashref();
 	$dbh->disconnect();
@@ -135,7 +135,7 @@ any '/reg_done' => sub {
 	my $fail_r = '';
 	
 	&connect_dbi();
-	$sbh = $dbh->prepare("SELECT * FROM user_name WHERE user_name = '" . params->{'login'} . "';");
+	$sbh = $dbh->prepare("SELECT * FROM username WHERE user_name = '" . params->{'login'} . "';");
 	$sbh->execute or die;
 	my $hashref = $sbh->fetchrow_hashref();
 	$dbh->disconnect();
@@ -155,7 +155,7 @@ any '/reg_done' => sub {
 		else  	   {	$log_in = params->{'login'};
 				mkdir( $path . params->{'login'} );
 				&connect_dbi();
-				$dbh->do("INSERT INTO user_name VALUES ('0','" . params->{'login'} . "','" .
+				$dbh->do("INSERT INTO username VALUES ('0','" . params->{'login'} . "','" .
 					md5_str( params->{'password1'}) . "','" . params->{'email'} . "')" );
 				$dbh->disconnect();
 				&move_file_to_db();

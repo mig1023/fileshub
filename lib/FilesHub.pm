@@ -44,7 +44,7 @@ any '/add' => sub {
 	my $uploadedFile = upload('file_name');
 	my $f_size;
 	my $checked_name = '';
-	if ($uploadedFile->size <= (32*1024*1024)) {
+	if ($uploadedFile->size <= (32*1024*1024)) { # ограничение в 30Мб
 		if ($log_in eq '') {
 			$checked_name = check_name (params->{'file_name'});
 			$uploadedFile->copy_to( $path . $checked_name ); 
@@ -134,6 +134,7 @@ any '/reg' => sub {
 any '/reg_done' => sub {
 	my $fail_r = '';
 	
+	# проверка уникальности логина
 	&connect_dbi();
 	$sbh = $dbh->prepare("SELECT * FROM username WHERE user_name = '" . params->{'login'} . "';");
 	$sbh->execute or die;
@@ -234,7 +235,7 @@ sub check_name {
 	$name_file;
 	};
 
-## присоединение к БД
+## подключение к БД
 sub connect_dbi {
 	$dbh = DBI->connect("dbi:mysql:dbname=FilesHub", "root", "password") or die;
 	$dbh->do("SET CHARACTER SET 'cp1251");

@@ -59,7 +59,7 @@ any '/add' => sub {
 			unshift(@files, $checked_name);
 			$f_size = f_size( $path . $log_in . '/' . $checked_name);
 			};
-		template "add_done" => {'filename' => params->{'file_name'},
+		template "add_done" => {'filename' => antixss( params->{'file_name'} ),
 					'filesize' => $f_size }; }
 	else { 	template "add_fail" };
 	};
@@ -73,7 +73,7 @@ any '/login' => sub {
 any '/log_done' => sub {
 	my $logfail = 0;
 	&connect_dbi();
-	$sbh = $dbh->prepare("SELECT * FROM username WHERE user_name = '" . params->{'login'} . "';");
+	$sbh = $dbh->prepare("SELECT * FROM username WHERE user_name = '" . antixss( params->{'login'} ) . "';");
 	$sbh->execute or die;
 	my $hashref = $sbh->fetchrow_hashref();
 	$dbh->disconnect();
@@ -81,7 +81,7 @@ any '/log_done' => sub {
 	if ( $hashref->{'password'} eq md5_str (params->{'password'}) ) {
 		$log_in = params->{'login'};
 		&move_file_to_db();
-		template "log_done" => { 'username' => params->{'login'} } }
+		template "log_done" => { 'username' => antixss( params->{'login'} ) } }
 	else {
 		$log_in = '';
 		template "log_fail" };	
@@ -136,7 +136,7 @@ any '/reg_done' => sub {
 	
 	# проверка уникальности логина
 	&connect_dbi();
-	$sbh = $dbh->prepare("SELECT * FROM username WHERE user_name = '" . params->{'login'} . "';");
+	$sbh = $dbh->prepare("SELECT * FROM username WHERE user_name = '" . antixss( params->{'login'} ) . "';");
 	$sbh->execute or die;
 	my $hashref = $sbh->fetchrow_hashref();
 	$dbh->disconnect();
@@ -156,12 +156,12 @@ any '/reg_done' => sub {
 		else  	   {	$log_in = params->{'login'};
 				mkdir( $path . params->{'login'} );
 				&connect_dbi();
-				$dbh->do("INSERT INTO username VALUES ('0','" . params->{'login'} . "','" .
+				$dbh->do("INSERT INTO username VALUES ('0','" . antixss( params->{'login'} ) . "','" .
 					md5_str( params->{'password1'}) . "','" . params->{'email'} . "')" );
 				$dbh->disconnect();
 				&move_file_to_db();
 				
-				template "reg_done" => { 'username' => params->{'login'} };	
+				template "reg_done" => { 'username' => antixss( params->{'login'} ) };	
 				}
 	};
 
@@ -246,7 +246,7 @@ sub connect_dbi {
 sub move_file_to_db {
 	&connect_dbi();
 	for (@files) {
-		$dbh->do("INSERT INTO download VALUES ('0','" . params->{'login'} . "','" . $_ . "')");
+		$dbh->do("INSERT INTO download VALUES ('0','" . antixss( params->{'login'} ) . "','" . $_ . "')");
 		move( $path . $_ , $path . $log_in . '/' . $_);
 		}
 	$dbh->disconnect();
@@ -281,6 +281,13 @@ sub md5_str {
 sub normal_name {
 	my $str = shift;
 	$str =~ s/\/bin\/.*/\//gi;
+	$str;
+	}
+
+## защита от xss
+sub antixss {
+	my $str = shift;
+	$str =~ s/[^A-Za-z0-9 ]*/ /g;
 	$str;
 	}
 

@@ -20,6 +20,8 @@ any '/' => sub {
 	my $files_nm = 0;
 	if (@files > 3) { $files_nm = 2 }
 		else	{ $files_nm = @files - 1 };
+	
+	# загрузка списка последних загруженных файлов
 	for (0..$files_nm) { 	$files_l .= '<tr><td>' . s_name($files[$_]) . '</td><td>';
 				if ($log_in eq '') { 	$files_l .= f_size($path . $files[$_]);
 							$files_l .= '</td><td>' . md5_file($path .
@@ -44,6 +46,7 @@ any '/add' => sub {
 	my $uploadedFile = upload('file_name');
 	my $f_size;
 	my $checked_name = '';
+	
 	if ($uploadedFile->size <= (32*1024*1024)) { # ограничение в 30Мб
 		if ($log_in eq '') {
 			$checked_name = check_name (params->{'file_name'});
@@ -53,15 +56,17 @@ any '/add' => sub {
 		else {
 			$checked_name = check_name (params->{'file_name'});
 			$uploadedFile->copy_to( $path . $log_in . '/' . $checked_name );
+			
 			&connect_dbi();
 			$dbh->do("INSERT INTO download VALUES ('0','" . $log_in . "','" . $checked_name . "')");
 			$dbh->disconnect();
+			
 			unshift(@files, $checked_name);
 			$f_size = f_size( $path . $log_in . '/' . $checked_name);
 			};
 		template "add_done" => {'filename' => antixss( params->{'file_name'} ),
 					'filesize' => $f_size }; }
-	else { 	template "add_fail" };
+	else { 	template "add_fail" }; # ошибка загрузки
 	};
 
 ## форма для авторизации
@@ -72,12 +77,15 @@ any '/login' => sub {
 ## авторизация
 any '/log_done' => sub {
 	my $logfail = 0;
+	
+	# запрос данных из базы по введённому логину
 	&connect_dbi();
 	$sbh = $dbh->prepare("SELECT * FROM username WHERE user_name = '" . antixss( params->{'login'} ) . "';");
 	$sbh->execute or die;
 	my $hashref = $sbh->fetchrow_hashref();
 	$dbh->disconnect();
 	
+	# проверка пароля
 	if ( $hashref->{'password'} eq md5_str (params->{'password'}) ) {
 		$log_in = params->{'login'};
 		&move_file_to_db();
@@ -94,7 +102,8 @@ any '/list' => sub {
 	my $hashref;
 	$sbh = $dbh->prepare("SELECT * FROM download WHERE user_name = '" . $log_in . "';");
 	$sbh->execute or die;
-		
+	
+	# список личных файлов с возможностью удаления
 	while ($hashref = $sbh->fetchrow_hashref()) { $files_l .= '<tr>' .
 		'<td>' . s_name($hashref->{'links'}). '</td>' . 
 		'<td>' . f_size( $path . $log_in . '/' . $hashref->{'links'} ) . '</td>' . 
@@ -113,6 +122,7 @@ any '/del' => sub {
 	&connect_dbi();
 	$dbh->do("DELETE FROM download WHERE links = '" . params->{'del_name'} . "';");
 	$dbh->disconnect();
+	
 	redirect '/list';
 	};
 
@@ -120,6 +130,7 @@ any '/del' => sub {
 any '/logout' => sub {
 	$log_in = '';
 	@files = ();
+	
 	redirect '/';
 	};
 

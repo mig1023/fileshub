@@ -22,14 +22,17 @@ any '/' => sub {
 		else	{ $files_nm = @files - 1 };
 	
 	# загрузка списка последних загруженных файлов
-	for (0..$files_nm) { 	$files_l .= '<tr><td>' . s_name($files[$_]) . '</td><td>';
-				if ($log_in eq '') { 	$files_l .= f_size($path . $files[$_]);
-							$files_l .= '</td><td>' . md5_file($path .
-								$files[$_]) . '</td></tr>'}
-					else	{ 	$files_l .= f_size($path . $log_in  . '/' . $files[$_]);
-							$files_l .= '</td><td>' . md5_file($path .
-								$log_in  . '/' . $files[$_]) . '</td></tr>' } 
-				};
+	for (0..$files_nm) {
+		$files_l .= '<tr><td>' . s_name($files[$_]) . '</td><td>';
+		if ($log_in eq '') {
+			$files_l .= f_size($path . $files[$_]);
+			$files_l .= '</td><td>' . md5_file($path .
+			$files[$_]) . '</td></tr>'; }
+		else {
+			$files_l .= f_size($path . $log_in  . '/' . $files[$_]);
+			$files_l .= '</td><td>' . md5_file($path .
+			$log_in  . '/' . $files[$_]) . '</td></tr>' } 
+			};
 	 	
     	template "index"  => {	'link_add' => uri_for('/add'),
     				'link_lst' => uri_for('/list'),
@@ -104,11 +107,12 @@ any '/list' => sub {
 	$sbh->execute or die;
 	
 	# список личных файлов с возможностью удаления
-	while ($hashref = $sbh->fetchrow_hashref()) { $files_l .= '<tr>' .
-		'<td>' . s_name($hashref->{'links'}). '</td>' . 
-		'<td>' . f_size( $path . $log_in . '/' . $hashref->{'links'} ) . '</td>' . 
-	 	'<td>' . md5_file( $path . $log_in . '/' .$hashref->{'links'} ) . '</td>' .
-	 	'<td><form style = "margin-bottom:0;" action = "' . uri_for('/del') . '" method = "post">' .
+	while ($hashref = $sbh->fetchrow_hashref()) {
+		$files_l .= '<tr>' .
+			'<td>' . s_name($hashref->{'links'}). '</td>' . 
+			'<td>' . f_size( $path . $log_in . '/' . $hashref->{'links'} ) . '</td>' . 
+	 		'<td>' . md5_file( $path . $log_in . '/' .$hashref->{'links'} ) . '</td>' .
+	 		'<td><form style = "margin-bottom:0;" action = "' . uri_for('/del') . '" method = "post">' .
 	 		'<input type = "hidden" name = "del_name" value = "' . $hashref->{'links'} . '">' . 
 	 		'<input type = "submit" value = "x"></form></td>' . 
 	 	'</tr>'; };
@@ -162,18 +166,21 @@ any '/reg_done' => sub {
 	$fail_r = 'не задан пароль' if params->{'password1'} eq '';
 	$fail_r = 'не задан логин' if params->{'login'} eq 'login';
 		
-	if ($fail_r ne '') { 	template "reg_fail" => { 'fail_txt' => $fail_r,
-							 'link_reg' => uri_for('/reg') }; }
-		else  	   {	$log_in = params->{'login'};
-				mkdir( $path . params->{'login'} );
-				&connect_dbi();
-				$dbh->do("INSERT INTO username VALUES ('0','" . antixss( params->{'login'} ) . "','" .
-					md5_str( params->{'password1'}) . "','" . params->{'email'} . "')" );
-				$dbh->disconnect();
-				&move_file_to_db();
-				
-				template "reg_done" => { 'username' => antixss( params->{'login'} ) };	
-				}
+	if ($fail_r ne '') {
+		template "reg_fail" => { 'fail_txt' => $fail_r,
+					 'link_reg' => uri_for('/reg') }; }
+	else {
+		$log_in = params->{'login'};
+		mkdir( $path . params->{'login'} );
+		
+		&connect_dbi();
+		$dbh->do("INSERT INTO username VALUES ('0','" . antixss( params->{'login'} ) . "','" .
+			md5_str( params->{'password1'}) . "','" . params->{'email'} . "')" );
+		$dbh->disconnect();
+		&move_file_to_db();
+			
+		template "reg_done" => { 'username' => antixss( params->{'login'} ) };	
+		}
 	};
 
 ## форма скачивания файла из общей папки
@@ -202,8 +209,10 @@ any '/download/*/*' => sub {
 
 ## скачивание файла
 any '/file/*' => sub {
-	if (params->{'s_capcha'} eq $capcha) 	{ send_file(params->{'filepath'}) }
-				else		{ template "file_fail" };
+	if (params->{'s_capcha'} eq $capcha) {
+		send_file(params->{'filepath'}) }
+	else {
+		template "file_fail" };
 	};
 
 ## размер файла в читабельном формате

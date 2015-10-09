@@ -5,6 +5,8 @@
 <% ELSE %>
 	<a href = "<% link_log %>">залогиниться</a> | <a href = "<% link_reg %>">зарегиться</a>
 <% END %>
+<br>Всего на FilesHub файлов: <% file_num %>
+<br>пользователей: <% user_num %>
 </div>
 
 <% IF filesnum %>

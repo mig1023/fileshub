@@ -41,7 +41,9 @@ any '/' => sub {
     				'link_reg' => uri_for('/reg'),
     				'user_log' => $log_in,
     				'filesnum' => scalar(@files),
-    				'fileslst' => $files_l };
+    				'fileslst' => $files_l,
+    				'file_num' => &server_num('download'),
+    				'user_num' => &server_num('username') };
 	};
 
 ## загрузка файла на сервер
@@ -284,10 +286,10 @@ sub capcha {
 
 ## расчёт md5 для файла
 sub md5_file {
-	open( my $file, '<', shift);
+	open my $file, '<', shift;
 	binmode( $file );
 	my $md5_result = Digest::MD5->new->addfile($file)->hexdigest;
-	close( $file );
+	close $file;
 	$md5_result;
 	}
 
@@ -302,6 +304,16 @@ sub normal_name {
 	my $str = shift;
 	$str =~ s/\/bin\/.*/\//gi;
 	$str;
+	}
+
+# количество строк в БД
+sub server_num {
+	&connect_dbi();
+	$sbh = $dbh->prepare("SELECT COUNT(1) as col FROM " . shift . ";");
+	$sbh->execute or die;
+	my $hashref = $sbh->fetchrow_hashref();
+	$dbh->disconnect();
+	$hashref->{'col'};
 	}
 
 ## защита от xss

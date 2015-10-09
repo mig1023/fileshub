@@ -53,11 +53,11 @@ text-align: center;
 }
 .left_login {
 position:fixed;
-width: 250px;
+width: 350px;
 top:10px;
 background: white;
 margin-left:100%;
-left:-260px;
+left:-360px;
 text-align: right;
 }
 .style_glob {

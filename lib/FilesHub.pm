@@ -319,7 +319,7 @@ sub server_num {
 ## защита от xss
 sub antixss {
 	my $str = shift;
-	$str =~ s/[^A-Za-z0-9 ]*/ /g;
+	$str =~ s/[^A-Za-z0-9 ]*//g;
 	$str;
 	}
 

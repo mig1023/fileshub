@@ -9,7 +9,7 @@ my $main_path = normal_name( (File::Spec->splitpath( __FILE__ ))[1]);
 my $path = $main_path . 'public/upload/';
 my $path_capcha = $main_path . 'public/images/capcha/';
 my $log_in = '';
-my $capcha = 0;
+my $capcha = {};
 my @files = ();
 my $dbh;
 my $sbh;
@@ -142,9 +142,11 @@ any '/logout' => sub {
 
 ## форма регистрации 
 any '/reg' => sub {
-	capcha();
+	my ($capcha_code, $capcha_dir) = capcha();
+	$capcha->{$capcha_dir} = $capcha_code;
 	
-	template "reg" => { 'reg_done' => uri_for('/reg_done') };
+	template "reg" => { 	'reg_done' => uri_for('/reg_done'),
+				'capcha_dir' => $capcha_dir };
 	};
 
 ## регистрация	
@@ -158,8 +160,10 @@ any '/reg_done' => sub {
 	my $hashref = $sbh->fetchrow_hashref();
 	$dbh->disconnect();
 	
+	clean_capcha(params->{'p_capcha'});
+	
 	$fail_r = 'логин уже занят' if params->{'login'} eq $hashref->{'user_name'} ;
-	$fail_r = 'неправильная каптча' if params->{'s_capcha'} != $capcha;
+	$fail_r = 'неправильная каптча' if params->{'s_capcha'} != $capcha->{params->{'p_capcha'}};
 	$fail_r = 'пароли не совпадают' if params->{'password1'} ne params->{'password2'};
 	$fail_r = 'неправильный email' if !(params->{'email'} =~ /.+@.+\..+/i);
 	$fail_r = 'не введена капча' if params->{'s_capcha'} eq 'xxxx';
@@ -188,30 +192,35 @@ any '/reg_done' => sub {
 ## форма скачивания файла из общей папки
 any '/download/*' => sub {
 	my ($filename) = splat;
-	capcha();
+	my ($capcha_code, $capcha_dir) = capcha();
+	$capcha->{$capcha_dir} = $capcha_code;
 	
 	template "file_down" => { 	'filename' => $filename,
 					'filelink' => uri_for("/file/" . $filename),
 					'filepath' => 'upload/' . $filename,
 					'permlink' => uri_for("/download/") . $filename,
+					'capcha_dir' => $capcha_dir,
 					'md5_file' => md5_file($main_path .'public/upload/' . $filename) }
 	};
 
 ## форма скачивания файла из личной папки
 any '/download/*/*' => sub {
 	my ($username, $filename) = splat;
-	capcha();
-
+	my ($capcha_code, $capcha_dir) = capcha();
+	$capcha->{$capcha_dir} = $capcha_code;
+	
 	template "file_down" => { 	'filename' => $filename,
 					'filelink' => uri_for("/file/" . $filename),
 					'filepath' => 'upload/' . $username . '/' . $filename,
 					'permlink' => uri_for("/download/") . $username . '/' . $filename,
+					'capcha_dir' => $capcha_dir,
 					'md5_file' => md5_file($main_path . 'public/upload/' . $username . '/' . $filename) };
 	};
 
 ## скачивание файла
 any '/file/*' => sub {
-	if (params->{'s_capcha'} eq $capcha) {
+	clean_capcha(params->{'p_capcha'});
+	if (params->{'s_capcha'} eq $capcha->{params->{'p_capcha'}}) {
 		send_file(params->{'filepath'}) }
 	else {
 		template "file_fail" };
@@ -277,11 +286,27 @@ sub move_file_to_db {
 ## капча (четыре случайные цифры)
 sub capcha {
 	my @symbol = ('A','B','C','D');
-	$capcha = '';
+	my $capch_dir;
+	do {
+		$capch_dir = '';
+		$capch_dir .= $symbol[int(rand(3))] for (1..10);
+	} while (-e $path_capcha . $capch_dir . '/');
+	
+	mkdir $path_capcha . $capch_dir . '/';
+	my $capcha = '';
 	for (0..3) {
 		my $number = int(rand(9));
-		copy( $path_capcha . $number . '.JPG' , $path_capcha . $symbol[$_].'.JPG');
-		$capcha .= $number; }; 
+		copy( $path_capcha . $number . '.JPG' , $path_capcha . $capch_dir . '/' . $symbol[$_].'.JPG');
+		$capcha .= $number;
+		}; 
+	return $capcha, $capch_dir;
+	}
+
+## удаление уже ненужных файлов капчи
+sub clean_capcha {
+	my $capch_dir = shift;
+	unlink $path_capcha . $capch_dir . '/' .$_. '.JPG' for ('A','B','C','D');
+	rmdir $path_capcha . $capch_dir . '/';
 	}
 
 ## расчёт md5 для файла
@@ -319,7 +344,7 @@ sub server_num {
 ## защита от xss
 sub antixss {
 	my $str = shift;
-	$str =~ s/[^A-Za-z0-9 ]*//g;
+	$str =~ s/[^A-Za-z0-9\s]+//g;
 	$str;
 	}
 

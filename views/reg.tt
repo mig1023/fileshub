@@ -17,8 +17,9 @@
 		onfocus="if (this.value == 'mail@mail.com') {this.value = ''; this.style.color = '#000';}"
 		onblur="if (this.value == '') {this.value = 'mail@mail.com'; this.style.color = '#777';}">
 	<br><br>
-	<img src = "/images/capcha/A.JPG"><img src = "/images/capcha/B.JPG">
-	<img src = "/images/capcha/C.JPG"><img src = "/images/capcha/D.JPG"><br>
+	<img src = "/images/capcha/<% capcha_dir %>/A.JPG"><img src = "/images/capcha/<% capcha_dir %>/B.JPG">
+	<img src = "/images/capcha/<% capcha_dir %>/C.JPG"><img src = "/images/capcha/<% capcha_dir %>/D.JPG"><br>
+	<input type = "hidden" name = "p_capcha" value = "<% capcha_dir %>">
 	введите четыре цифры:<br>
 	<input type = "text" size = "22" value = "xxxx" name = "s_capcha" style="color: #777;"
 		onfocus="if (this.value == 'xxxx') {this.value = ''; this.style.color = '#000';}"

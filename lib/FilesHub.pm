@@ -4,6 +4,7 @@ use Digest::MD5;
 use DBI;
 use File::Copy;
 use File::Spec;
+use Data::Dumper;
 
 my $main_path = normal_name( (File::Spec->splitpath( __FILE__ ))[1]);
 my $path = $main_path . 'public/upload/';
@@ -63,7 +64,7 @@ any '/add' => sub {
 			$uploadedFile->copy_to( $path . $log_in . '/' . $checked_name );
 			
 			&connect_dbi();
-			$dbh->do("INSERT INTO download VALUES ('0','" . $log_in . "','" . $checked_name . "')");
+			$dbh->do("INSERT INTO download (user_name, links) VALUES (?,?)",{},$log_in,$checked_name);
 			$dbh->disconnect();
 			
 			unshift(@files, $checked_name);
@@ -85,9 +86,7 @@ any '/log_done' => sub {
 	
 	# запрос данных из базы по введённому логину
 	&connect_dbi();
-	$sbh = $dbh->prepare("SELECT * FROM username WHERE user_name = '" . antixss( params->{'login'} ) . "';");
-	$sbh->execute or die;
-	my $hashref = $sbh->fetchrow_hashref();
+	my $hashref = $dbh->selectrow_hashref("SELECT password FROM username WHERE user_name = ?", {}, params->{'login'});
 	$dbh->disconnect();
 	
 	# проверка пароля
@@ -104,12 +103,10 @@ any '/log_done' => sub {
 any '/list' => sub {
 	&connect_dbi();
 	my $files_l = "";
-	my $hashref;
-	$sbh = $dbh->prepare("SELECT * FROM download WHERE user_name = '" . $log_in . "';");
-	$sbh->execute or die;
-	
+	my $hashrefs = $dbh->selectall_arrayref("SELECT links FROM download WHERE user_name = ?", {Slice => {}}, $log_in);
+
 	# список личных файлов с возможностью удаления
-	while ($hashref = $sbh->fetchrow_hashref()) {
+	for my $hashref (@$hashrefs) {
 		$files_l .= '<tr>' .
 			'<td>' . s_name($hashref->{'links'}). '</td>' . 
 			'<td>' . f_size( $path . $log_in . '/' . $hashref->{'links'} ) . '</td>' . 
@@ -126,7 +123,7 @@ any '/list' => sub {
 any '/del' => sub {
 	unlink $path . $log_in . '/' . params->{'del_name'};
 	&connect_dbi();
-	$dbh->do("DELETE FROM download WHERE links = '" . params->{'del_name'} . "';");
+	$dbh->do("DELETE FROM download WHERE links = ?", {}, params->{'del_name'});
 	$dbh->disconnect();
 	
 	redirect '/list';
@@ -155,9 +152,7 @@ any '/reg_done' => sub {
 	
 	# проверка уникальности логина
 	&connect_dbi();
-	$sbh = $dbh->prepare("SELECT * FROM username WHERE user_name = '" . antixss( params->{'login'} ) . "';");
-	$sbh->execute or die;
-	my $hashref = $sbh->fetchrow_hashref();
+	my $hashref = $dbh->selectrow_hashref("SELECT user_name FROM username WHERE user_name = ?", {}, params->{'login'});
 	$dbh->disconnect();
 	
 	clean_capcha(params->{'p_capcha'});
@@ -180,8 +175,8 @@ any '/reg_done' => sub {
 		mkdir( $path . params->{'login'} );
 		
 		&connect_dbi();
-		$dbh->do("INSERT INTO username VALUES ('0','" . antixss( params->{'login'} ) . "','" .
-			md5_str( params->{'password1'}) . "','" . params->{'email'} . "')" );
+		$dbh->do("INSERT INTO username (user_name, password, email) VALUES (?,?,?)", {}, params->{'login'},
+					md5_str( params->{'password1'} ), params->{'email'});
 		$dbh->disconnect();
 		&move_file_to_db();
 			
@@ -269,16 +264,14 @@ sub check_name {
 ## подключение к БД
 sub connect_dbi {
 	$dbh = DBI->connect("dbi:mysql:dbname=FilesHub", "root", "password") or die;
-	$dbh->do("SET CHARACTER SET 'cp1251");
-	$dbh->do("SET NAMES 'cp1251");
 	}
 
 ## перемещение файлов из общей папки в личную
 sub move_file_to_db {
 	&connect_dbi();
 	for (@files) {
-		$dbh->do("INSERT INTO download VALUES ('0','" . antixss( params->{'login'} ) . "','" . $_ . "')");
-		move( $path . $_ , $path . $log_in . '/' . $_);
+		$dbh->do("INSERT INTO download (user_name, links) VALUES (?,?)", {}, params->{'login'}, $_);
+		move( $path.$_ , $path.$log_in.'/'.$_);
 		}
 	$dbh->disconnect();
 	}
@@ -334,9 +327,7 @@ sub normal_name {
 # количество строк в БД
 sub server_num {
 	&connect_dbi();
-	$sbh = $dbh->prepare("SELECT COUNT(1) as col FROM " . shift . ";");
-	$sbh->execute or die;
-	my $hashref = $sbh->fetchrow_hashref();
+	my $hashref = $dbh->selectrow_hashref("SELECT COUNT(1) as col FROM ". shift);
 	$dbh->disconnect();
 	$hashref->{'col'};
 	}

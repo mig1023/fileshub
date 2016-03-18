@@ -1,7 +1,7 @@
 <div class = style_load>
 
 Файл: <% filename %><br>
-Ссылка: <a href="<% permlink %>"><% permlink %></a><br>
+Ссылка: <a href="<% permlink %>">permalink</a><br>
 MD5: <% md5_file %><br><br>
 <form action = "<% filelink %>" method = "post">
 <input type = "hidden" name = "filepath" value = "<% filepath %>">
